@@ -23,8 +23,9 @@ jobs:
         with:
           node-version: 22
 
+      # Use `npm install` when package-lock.json is not committed (see .gitignore).
       - name: Install dependencies
-        run: npm ci
+        run: npm install
 
       - name: Install Playwright browsers
         run: npx playwright install --with-deps
