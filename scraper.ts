@@ -514,9 +514,10 @@ export async function getSnkrdunkLastSoldByGrade(cardQuery: string): Promise<Snk
 }
 
 /**
- * Pick one numeric “headline” sold price from a resolved scrape (PSA 10 if present, else first DOM grade).
+ * Single “headline” sold price from a RESOLVED result (PSA 10 if present, else first grade in DOM order).
+ * Use when you only need a number; otherwise call `getSnkrdunkLastSoldByGrade` for full `{ type, ... }`.
  */
-function pickSingleLastSoldPrice(resolved: SnkrdunkResolvedLastSoldByGrade): number {
+export function pickSingleLastSoldPrice(resolved: SnkrdunkResolvedLastSoldByGrade): number {
   const { lastSoldByGrade, lastSoldGradeOrder } = resolved;
   const psa10 = lastSoldByGrade['PSA 10'];
   if (psa10 !== undefined) return psa10;
@@ -532,18 +533,4 @@ function pickSingleLastSoldPrice(resolved: SnkrdunkResolvedLastSoldByGrade): num
   const k0 = keys[0];
   if (k0 === undefined) throw new Error('No sold prices found');
   return lastSoldByGrade[k0];
-}
-
-/**
- * Back-compat: returns a single numeric price — PSA 10 last sold if present, else first grade in DOM order.
- * Prefer `getSnkrdunkLastSoldByGrade` for full `{ type, lastSoldByGrade, ... }` or `AMBIGUOUS` handling.
- */
-export async function getSnkrdunkPrice(cardName: string): Promise<number> {
-  const r = await getSnkrdunkLastSoldByGrade(cardName);
-  if (r.type !== 'RESOLVED') {
-    throw new Error(
-      'Search is ambiguous: multiple products matched. Pick a candidate productUrl and call again with that URL or id.',
-    );
-  }
-  return pickSingleLastSoldPrice(r);
 }
