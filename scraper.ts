@@ -513,11 +513,25 @@ export async function getSnkrdunkLastSoldByGrade(cardQuery: string): Promise<Snk
   }
 }
 
+type ResolvedResult = {
+  type: "RESOLVED";
+  resolvedTitle: string;
+  productUrl: string;
+  listingsUrl: string;
+  lastSoldByGrade: Record<string, number>;
+  lastSoldGradeOrder: string[];
+};
+
+type AmbiguousResult = {
+  type: "AMBIGUOUS";
+  candidates: { title: string; productUrl: string }[];
+};
+
 /**
  * Back-compat: returns PSA 10 last sold if present, otherwise the first grade key (alphabetically) on the page.
  * Prefer `getSnkrdunkLastSoldByGrade` for all grades.
  */
-export async function getSnkrdunkPrice(cardName: string): Promise<number> {
+export async function getSnkrdunkPrice(cardName: string): Promise<ResolvedResult | AmbiguousResult> {
   const r = await getSnkrdunkLastSoldByGrade(cardName);
   if (r.type === 'AMBIGUOUS') {
     throw new Error(
