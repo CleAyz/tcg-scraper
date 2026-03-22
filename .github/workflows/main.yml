@@ -1,9 +1,14 @@
+# SNKRDUNK scheduled scraper
+#
+# IMPORTANT: Do NOT run `npx ts-node index.ts` in CI — it type-checks on the fly and can fail
+# differently than `tsc`. Always compile with `npm run build` then run `node dist/index.js`.
+
 name: SNKRDUNK Scraper
 
 on:
   schedule:
     - cron: "0 */3 * * *" # every 3 hours
-  workflow_dispatch: # allow manual trigger
+  workflow_dispatch:
 
 jobs:
   scrape:
@@ -19,14 +24,18 @@ jobs:
           node-version: 22
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
-      - name: Install Playwright Browsers
+      - name: Install Playwright browsers
         run: npx playwright install --with-deps
 
-      # Compile with tsc then run dist — matches local `npm run build` and avoids stale committed dist/*.js.
-      - name: Build & run scraper
-        run: npm run ci:scrape
+      # Same as local: `npm run build` (tsc → dist/)
+      - name: Compile TypeScript
+        run: npm run build
+
+      # Run compiled output only (NOT ts-node)
+      - name: Run scraper
+        run: node dist/index.js
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
