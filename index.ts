@@ -1,4 +1,4 @@
-import { getSnkrdunkPrice } from "./scraper";
+import { getSnkrdunkLastSoldByGrade } from "./scraper";
 import { createClient } from "@supabase/supabase-js";
 
 async function main() {
@@ -14,7 +14,7 @@ async function main() {
 
   for (const card of trackedCards) {
     try {
-      const result = await getSnkrdunkPrice(card);
+      const result = await getSnkrdunkLastSoldByGrade(card);
 
       if (result.type === "RESOLVED") {
         await supabase.from("price_cache").upsert({
@@ -25,6 +25,8 @@ async function main() {
         });
 
         console.log("Updated:", card);
+      } else {
+        console.warn("Ambiguous search, skipped:", card, result.candidates.length, "candidates");
       }
 
     } catch (err) {
