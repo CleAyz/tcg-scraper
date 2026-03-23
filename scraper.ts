@@ -534,3 +534,17 @@ export function pickSingleLastSoldPrice(resolved: SnkrdunkResolvedLastSoldByGrad
   if (k0 === undefined) throw new Error('No sold prices found');
   return lastSoldByGrade[k0];
 }
+
+/**
+ * Backward-compatible numeric helper.
+ * Keeps the original signature expected by callers: getSnkrdunkPrice(cardQuery: string).
+ */
+export async function getSnkrdunkPrice(cardQuery: string): Promise<number> {
+  const result = await getSnkrdunkLastSoldByGrade(cardQuery);
+  if (result.type !== 'RESOLVED') {
+    throw new Error(
+      'Search is ambiguous: multiple products matched. Pick a candidate productUrl and call again with that URL or id.',
+    );
+  }
+  return pickSingleLastSoldPrice(result);
+}
