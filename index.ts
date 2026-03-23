@@ -1,4 +1,4 @@
-import { getSnkrdunkLastSoldByGrade } from "./scraper";
+import { getSnkrdunkPrice } from "./scraper";
 import { createClient } from "@supabase/supabase-js";
 
 async function main() {
@@ -24,27 +24,18 @@ async function main() {
 
   for (const card of trackedCards) {
     try {
-      const result = await getSnkrdunkLastSoldByGrade(card);
+      const result = await getSnkrdunkPrice(card.card_query);
 
-      if (result.type === "RESOLVED") {
-        await supabase.from("price_cache").upsert({
-          card_query: card,
-          source: "snkrdunk",
-          price_data: result,
-          updated_at: new Date().toISOString(),
-        });
+      await supabase.from("price_cache").upsert({
+        card_query: card.card_query,
+        source: "snkrdunk",
+        price_data: result,
+        updated_at: new Date().toISOString(),
+      });
 
-        console.log("Updated:", card);
-      } else {
-        console.warn(
-          "Ambiguous search, skipped:",
-          card,
-          result.candidates.length,
-          "candidates",
-        );
-      }
+      console.log("Updated:", card.card_query);
     } catch (err) {
-      console.error("Failed:", card, err);
+      console.error("Failed:", card.card_query, err);
     }
   }
 }
